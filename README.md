@@ -32,3 +32,7 @@ Code to reproduce the fold enrichment analyses and figures from the article
   `> make`
 4. All the files will be generated in the data folder
 5. All the figures from the analyses will be created in the 'figures/' folder
+
+**Requirements**
+- Perl
+- R
