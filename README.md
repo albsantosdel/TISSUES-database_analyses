@@ -19,16 +19,16 @@ Code to reproduce the fold enrichment analyses and figures from the article
  - data/ 
   - datasests/ `Datasets files need to be stored here`
   - dictionary/ `Contains the files necessary to perform the tissue backtracking bassed on BRENDA Ontology`
-   - labels.tsv `The bto terms corresponding to the 21 tissues of interest: tissues\_code  tissue\_name  BTO`
-   - bto\_entities.tsv `mapping of bto terms to internal identifiers: internal\_code  tissues\_code  BTO`
-   - bto\_groups .tsv `the parent children relationships used to do the backtracking: internal\_code  parent\_internal\_code`
+   - labels.tsv `The bto terms corresponding to the 21 tissues of interest: tissues_code  tissue_name  BTO`
+   - bto\_entities.tsv `mapping of bto terms to internal identifiers: internal_code  tissues_code  BTO`
+   - bto\_groups .tsv `the parent children relationships used to do the backtracking: internal_code  parent_internal_code`
  - figures/ `Folder where all the figures generated are stored`
 
 **Run the analyses**
 
 1. Download the whole project
 2. Modify the analyses.R:
-  - Change the setwd(dir="..."), to the directory where you downloaded the project, i.e. `setwd(dir="~/albsantosdel/reproducible_analyses")` 
+  - Change the setwd(dir="..."), to the directory where you downloaded the project, i.e. `setwd(dir="~/albsantosdel/reproduce_analyses")` 
 3. Execute the makefile script from the command line:
   `> make`
 4. All the files will be generated in the data folder
