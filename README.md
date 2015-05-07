@@ -17,11 +17,11 @@ Code to reproduce the fold enrichment analyses and figures from the article
       - venn\_diagram_analyses.R `Creates all the venn diagrams and calculates the p-values of the overalps when comparing common proteins and tissues`
       - external\_function.R `External function to switch coordinates in facet grid (Function from` [`stackoverflow`](http://stackoverflow.com/questions/6625691/is-it-possible-to-switch-the-side-of-y-axis-breaks-and-labels-on-a-faceted-plot)`)`
  - data/ 
-  - datasests/ `Datasets files`
+  - datasests/ `Datasets files need to be stored here`
   - dictionary/ `Contains the files necessary to perform the tissue backtracking bassed on BRENDA Ontology`
-   - labels.tsv `The bto terms corresponding to the 21 tissues of interest`: tissues\_code  tissue\_name  BTO
-   - bto\_entities.tsv `mapping of bto terms to internal identifiers`: internal\_code  tissues\_code  BTO
-   - bto\_groups .tsv `the parent children relationships used to do the backtracking`: internal\_code  parent\_internal\_code
+   - labels.tsv `The bto terms corresponding to the 21 tissues of interest: tissues\_code  tissue\_name  BTO`
+   - bto\_entities.tsv `mapping of bto terms to internal identifiers: internal\_code  tissues\_code  BTO`
+   - bto\_groups .tsv `the parent children relationships used to do the backtracking: internal\_code  parent\_internal\_code`
  - figures/ `Folder where all the figures generated are stored`
 
 **Run the analyses**
@@ -30,6 +30,6 @@ Code to reproduce the fold enrichment analyses and figures from the article
 2. Modify the analyses.R:
   - Change the setwd(dir="..."), to the directory where you downloaded the project, i.e. `setwd(dir="~/albsantosdel/reproducible_analyses")` 
 3. Execute the makefile script from the command line:
-  > make
+  `> make`
 4. All the files will be generated in the data folder
 5. All the figures from the analyses will be created in the 'figures/' folder
