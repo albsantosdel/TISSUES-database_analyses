@@ -27,10 +27,8 @@ Code to reproduce the fold enrichment analyses and figures from the article
 **Run the analyses**
 
 1. Download the project
-2. Download the datasets from FigShare and store them into data/datasets folder: [datasets](http://figshare.com/s/cb788d0ef4bd11e4b5ea06ec4b8d1f61)
-3. Modify the analyses.R:
-  - Change the setwd(dir=""), to the directory where you downloaded the project, i.e. `setwd(dir="~/albsantosdel/reproduce_analyses")` 
-4. Execute the makefile script from the command line:
+2. Download the datasets from FigShare and store them into data/datasets/ folder: [datasets](http://figshare.com/s/cb788d0ef4bd11e4b5ea06ec4b8d1f61)
+3. Execute the makefile script from the command line:
   `> make`
-5. All the files will be generated in the data folder
-6. All the figures from the analyses will be created in the 'figures/' folder
+4. All the files will be generated in the data folder
+5. All the figures from the analyses will be created in the 'figures/' folder

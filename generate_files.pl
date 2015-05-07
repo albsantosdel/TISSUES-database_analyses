@@ -1,11 +1,17 @@
+#################################################################################################################################
+#		This code generates all the files necessary to reproduce the figures shown in the manuscript			#
+#			Comprehensive comparison of large-scale tissue expression datasets					#
+#	Alberto Santos, Kalliopi Tsafou, Christian Stolte, Sune Pletscher-Frankild, Seán I. O’Donoghue and Lars Juhl Jensen	#
+#################################################################################################################################
+	
 #!/usr/bin/ perl
 use warnings;
 use strict;
-use Data::Dumper;
 
 #Data directory
 my $data_dir = "data/";
-#Input files
+#Input files: this files need to be downloaded from FigShare (http://figshare.com/s/cb788d0ef4bd11e4b5ea06ec4b8d1f61)
+# and stored in the data/datasets/ directory
 my %options = ("unigene"=> $data_dir."datasets/unigene.tsv",
                 "gnf"=> $data_dir."datasets/gnf.tsv",
                 "exon"=> $data_dir."datasets/exon.tsv",
@@ -14,12 +20,14 @@ my %options = ("unigene"=> $data_dir."datasets/unigene.tsv",
                 "rna"=> $data_dir."datasets/rna_seq.tsv",
                 "tm"=> $data_dir."datasets/text_mining.tsv",
                 "hpm"=> $data_dir."datasets/hpm.tsv");
-#dictionary files
+
+#dictionary files: These files are used for backtracking tissues to their respective parent tissues
+# to identify which genes are expressed in the tissues of interest (more details in the README file)
 my $labels_file = $data_dir."dictionary/labels.tsv";
 my $bto_entities = $data_dir."dictionary/bto_entities.tsv";
 my $bto_groups = $data_dir."dictionary/bto_groups.tsv";
 
-#common tissues
+#common tissues: List of common tissues to all datasets
 my %common_tissues =("heart"=>1, "liver"=>1, "intestine"=>1, "nervous system"=>1, "kidney"=>1);
 
 #Get the dataset name we are going to analyze   
@@ -32,14 +40,15 @@ my $goldstandard_file = $data_dir."datasets/uniprot.tsv";
 #sliding window
 my $window_size = 100;
 
-#mRNA datasets necessary to generate the mRNA reference set
+#mRNA datasets necessary to generate the mRNA reference set: Gene-tissue associations in at least half of the datasets 
+# and a expression higher that these cutoffs will be included in the mRNA reference set 
 my %mRNA = ("unigene"=> 20,
        	"gnf"=> 250,
 	"exon"=> 250,
 	"hpa_rna"=> 20,
 	"rna"=> 5);
 
-#Selected cutoffs
+#Cutoffs used in the publication: [low, medium, high]
 my %cutoffs = ("unigene"=>[0.9,10,20],
 	"gnf"=> [50,100,250],
 	"exon"=> [50,100,250],
@@ -51,13 +60,15 @@ my %cutoffs = ("unigene"=>[0.9,10,20],
 	"hpm"=>[0,5,15]);
 
 #output files
-my $major_tissues_file = $data_dir."datasets_major_tissues.tsv";
-my $expression_breadth_file = "cutoff_expression_breadth.tsv";
-my $consistency_file = "consistency_analysis.tsv";
-my $mRNA_reference_set = $data_dir."mRNA_reference_set.tsv";
-my $hpa_single_antibody_prots = $data_dir."hpa_single_antibody_proteins.tsv";
+my $major_tissues_file = $data_dir."datasets_major_tissues.tsv"; #Specifies which datasets have which major tissues within the ones specified in the labels.tsv file
+my $expression_breadth_file = "cutoff_expression_breadth.tsv"; #Expression breadth for each of the datasets in each cutoff
+my $consistency_file = "consistency_analysis.tsv"; #Gene-tissue associations per dataset per cutoff
+my $mRNA_reference_set = $data_dir."mRNA_reference_set.tsv"; #Contains the gene-tissue pairs that form the mRNA reference set used in the comparisons for confirmation of trends
+my $hpa_single_antibody_prots = $data_dir."hpa_single_antibody_proteins.tsv"; #Proteins with a single antibody in HPA Immunohistochemistry experiments
 
-#Execution
+##############
+#  Execution #
+##############
 my ($labels) = &parse_labels_file(\%common_tissues);
 my ($entities) = &parse_bto_entities_file();
 my ($groups) = &parse_bto_groups_file();
@@ -129,7 +140,9 @@ foreach my $goldstandard (keys %gold_standards){
 my $min_datasets = int((keys %mRNA)/2) + 1;#In at least more than half of the datasets
 &print_mRNA_reference_set(\%reference_set, $mRNA_reference_set, $min_datasets);
 
-##Functions
+##############
+#  Functions #
+##############
 sub print_2dim(){
 	my ($data) = $_[0];
 	my ($output_file) = $_[1];
@@ -423,6 +436,8 @@ sub get_exp_breadth_and_consistency_analyses_files(){
 	}
 }
 
+#The mRNA references set is formed by all the high confident gene-tissue pairs that are found in at least half 
+# ofthe transcriptomics datasets
 sub build_mRNA_references_set(){
 	my ($dataset_labels) = $_[0];
 	my ($reference_set) = $_[1];
@@ -438,6 +453,8 @@ sub build_mRNA_references_set(){
 	}
 }
 
+#Calculate the fold enrichment for each dataset using a moving average window over the score
+#This allowed making the datasets comparable
 sub calculate_fold_enrichment(){
     	my ($dataset) = $_[0];
     	my ($gold) = $_[1];
