@@ -54,42 +54,4 @@ get_colors<-function(is_label = F){
 }
 
 
-## calculate p-value for N circle venn diagram 
-## code inspired from https://bioinfomagician.wordpress.com/2014/03/04/p-value-for-intersection-of-multiple-circle-venn-diagram/
-## adapted by Anders Boeck Jensen
-calc_venn_pvalue<-function(N,inAll,inSingles, nIterations, title,  append = FALSE){
-  #N=7000 # total number of genes for selection
-  #inAll=3 # number of overlaps in all three sets
-  #inSingles = c(200,250,300) = number of up-regulated genes in each sample
-  
-  #create a dataframe to store frequency table
-  d<-data.frame(0:min(inSingles),rep(0,min(inSingles)+1))
-  #To loop over (just to make it once)
-  loopValues = c(2:length(inSingles))
-  for (i in 1:nIterations){
-    A=sample(1:N,size=inSingles[1],replace=FALSE)
-    sampledInAll = rep(TRUE, length(A))
-    for(i in loopValues){
-      B=sample(1:N,size=inSingles[i],replace=FALSE)
-      sampledInAll = sampledInAll&(A %in% B)
-      if(sum(sampledInAll)==0){
-        break
-      }
-    }
-    e = sum(sampledInAll)
-    d[e+1,2]<-d[e+1,2]+1
-  }
-  
-  colnames(d)<-c("Intersect","p-value")
-  # convert counts to ratios
-  d[,2]<-d[,2]/10000
-  # calculate p-value
-  p<-sum(d[(inAll+1):(min(inSingles)+1),2])
-  
-  text <- paste("P-value ", title, "\n", sep='')
-  text<-paste(text,"p-value = ", p, "\n", sep='')
-  
-  write(text, file = "multiple_ways_pvalue_results.txt", append = append)
-  #print(d)
-  return(p)
-}
+
