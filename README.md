@@ -4,9 +4,9 @@ Comprehensive comparison of large-scale tissue expression datasets ![alt text](h
 Code to reproduce the fold enrichment analyses and figures from the article
 --------------
 **Project structure**
-- README.md *Markdown file*
-- makefile  *main script*
-- generate\_files.pl *script to generate all the necessary files. This script uses the original datasets files (with no filter for unconfident gene-tissue associations)*
+- README.md 	*Markdown file*
+- makefile  	*main script*
+- generate\_files.pl 	*script to generate all the necessary files. This script uses the original datasets files (with no filter for unconfident gene-tissue associations)*
 - analyses.R *script orchestrating the generation of the figures*
 - R/ *All the scripts necessary to reproduce the figures*
 
