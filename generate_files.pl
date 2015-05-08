@@ -486,7 +486,6 @@ sub calculate_fold_enrichment(){
 	    		}
 		}
     	}
-    	print scalar keys %gold_valid_prots;
     	print "- The dataset has $dataset_total_pairs pairs in total\n";
     	
 	
