@@ -5,11 +5,11 @@ Code to reproduce the fold enrichment analyses and figures from the article
 --------------
 **Project structure**
 - analyses/
- - README.md ###### Markdown file
- - makefile  main ###### script
- - generate\_files.pl ###### script to generate all the necessary files. This script uses the original datasets files (with no filter for unconfident gene-tissue associations) 
- - analyses.R ###### script orchestrating the generation of the figures
- - R/ ###### All the scripts necessary to reproduce the figures
+ - README.md *Markdown file*
+ - makefile  *main script*
+ - generate\_files.pl *script to generate all the necessary files. This script uses the original datasets files (with no filter for unconfident gene-tissue associations)*
+ - analyses.R *script orchestrating the generation of the figures*
+ - R/ *All the scripts necessary to reproduce the figures*
    - summary\_figure\_drawing.R ###### Initial figure with the tissues and number of genes/proteins provided by each dataset
     - datasets\_expression\_breadth\_analyses.R ###### Expression breadth distribution analysis
      - fold\_enrichment\_analysis\_per\_dataset.R ###### Generates the fold-enrichment plots for each dataset
