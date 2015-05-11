@@ -106,7 +106,7 @@ calc_pairwise_pvalue <- function(labelA, A, labelB, B, population, cutoff, extra
   contigency.matrix <- matrix(c(common, singleA, singleB, notInAB),
            nrow = 2, dimnames = list(c(labelB, nolabelB), c(labelA, nolabelA)))
   
-  #print(contigency.matrix)
+  print(contigency.matrix)
   
   p <- fisher.test(contigency.matrix, alternative="greater", simulate.p.value=TRUE)
   
