@@ -177,28 +177,15 @@ get_venn_diagrams<-function(protein_tissues,cutoff,uniprot=F,col, append = apppe
     tm_data<- filter_dataset_tissue(protein_tissues,"tm",c(),not_in=TRUE,c(3,4))
     uniprot_data<-filter_dataset_tissue(protein_tissues,"uniprot",c(),not_in=TRUE,c(3,4))
     
-    mRNA_data<-rbind(exon_data[exon_data$score>250,],gnf_data[gnf_data$score>250,],hparna_data[hparna_data$score>20,],unigene_data[unigene_data$score>20,],rna_data[rna_data$score>5,])
-    prot_data<-rbind(hpa_data[hpa_data$score>9.9,],hpm_data[hpm_data$score>10,])
+    mRNA_data<-rbind(exon_data[exon_data$score>=250,],gnf_data[gnf_data$score>=250,],hparna_data[hparna_data$score>=20,],unigene_data[unigene_data$score>=20,],rna_data[rna_data$score>=5,])
+    prot_data<-rbind(hpa_data[hpa_data$score>=10.45,],hpm_data[hpm_data$score>=10,])
     
     prot_data$pairs<-paste(prot_data$proteins,prot_data$tissue,sep="-")
     tm_data$pairs<-paste(tm_data$proteins,tm_data$tissue,sep="-")
     uniprot_data$pairs<-paste(uniprot_data$proteins,uniprot_data$tissue,sep="-")
     mRNA_data$pairs<-paste(mRNA_data$proteins,mRNA_data$tissue,sep="-")
     
-    #pvalue <-calc_pairwise_pvalue("transcriptomics set", mRNA_data$pairs, "proteomics set", prot_data$pairs, population, cutoff,"", append = TRUE)
-    #pvalue <-calc_pairwise_pvalue("transcriptomics set", mRNA_data$pairs, "uniprot", uniprot_data$pairs, population, cutoff, "",append = TRUE)
-    #pvalue <-calc_pairwise_pvalue("transcriptomics set", mRNA_data$pairs, "text mining", tm_data$pairs, population, cutoff, "",append = TRUE)
-    #pvalue <-calc_pairwise_pvalue("proteomics set", prot_data$pairs, "uniprot", uniprot_data$pairs, population, cutoff, "",append = TRUE)
-    #pvalue <-calc_pairwise_pvalue("proteomics set", prot_data$pairs, "text mining", tm_data$pairs, population, cutoff, "",append = TRUE)
-    #pvalue <-calc_pairwise_pvalue("uniprot", uniprot_data$pairs, "text mining", tm_data$pairs, population, cutoff, "",append = TRUE)
-    
-    
     all_list<- list("transcriptomics set"= mRNA_data$pairs,"proteomics set"=prot_data$pairs," "=uniprot_data$pairs," "= tm_data$pairs)
-    
-    #inAll <- length(intersect(x= mRNA_data$pairs,y= intersect(x = prot_data$pairs, y = intersect(x = uniprot_data$pairs, y = tm_data$pairs))))
-    #inSingles <- c(length(unique(mRNA_data$pairs)),length(unique(prot_data$pairs)),length(unique(uniprot_data$pairs)),length(unique(tm_data$pairs)))
-    #pvalue_title <- paste("Pvalues Comparing all datasets at cutoff ", cutoff, sep='')
-    #p<-calc_venn_pvalue(length(population),inAll,inSingles, nIterations = 100000, pvalue_title, append = FALSE)
     
     colors<-c("#b6dba4",col[7],col[8],"#99dbf8")
     text_colors<-c("#b6dba4","#99dbf8",col[7],col[8])
@@ -218,8 +205,8 @@ get_venn_diagrams<-function(protein_tissues,cutoff,uniprot=F,col, append = apppe
     tm_data<- filter_dataset_tissue(tm_data,NULL,uncommon_tissues,not_in=TRUE,c(1,2))
     uniprot_data<-filter_dataset_tissue(uniprot_data,NULL,uncommon_tissues,not_in=TRUE,c(1,2))
     
-    mRNA_data<-rbind(exon_data[exon_data$score>250,],gnf_data[gnf_data$score>250,],hparna_data[hparna_data$score>20,],unigene_data[unigene_data$score>20,],rna_data[rna_data$score>5,])
-    prot_data<-rbind(hpa_data[hpa_data$score>9.9,],hpm_data[hpm_data$score>10,])
+    mRNA_data<-rbind(exon_data[exon_data$score>=250,],gnf_data[gnf_data$score>=250,],hparna_data[hparna_data$score>=20,],unigene_data[unigene_data$score>=20,],rna_data[rna_data$score>=5,])
+    prot_data<-rbind(hpa_data[hpa_data$score>=10.45,],hpm_data[hpm_data$score>=10,])
     
     #common proteins
     common_proteins_med<-intersect(x=intersect(x=intersect(x=tm_data$proteins,y=uniprot_data$proteins),y=prot_data$proteins),y=mRNA_data$proteins)
@@ -252,7 +239,18 @@ get_venn_diagrams<-function(protein_tissues,cutoff,uniprot=F,col, append = apppe
     inAll <- length(intersect(x= mRNA_data$pairs,y= intersect(x = prot_data$pairs, y = intersect(x = uniprot_data$pairs, y = tm_data$pairs))))
     inSingles <- c(length(unique(mRNA_data$pairs)),length(unique(prot_data$pairs)),length(unique(uniprot_data$pairs)),length(unique(tm_data$pairs)))
     pvalue_title <- paste("Pvalues Comparing all datasets (only common proteins) at cutoff ", cutoff, sep='')
-    #p<-calc_venn_pvalue(length(population),inAll,inSingles, nIterations = 10000, pvalue_title, append = TRUE)
+    
+    ##create supplementary files
+    common_prot_mRNA <- intersect(x = mRNA_data$pairs, y=prot_data$pairs)
+    common_all <- intersect(x = mRNA_data$pairs, y = intersect( x = prot_data$pairs, y = intersect(x = uniprot_data$pairs, y = tm_data$pairs)))
+    unique <- c(setdiff(x = mRNA_data$pairs, y = common_all), setdiff(x = prot_data$pairs, y = common_all),setdiff(x = uniprot_data$pairs, y = common_all),setdiff(x = tm_data$pairs, y = common_all))
+    
+    
+    write.table(common_prot_mRNA, file="Common_gene_tissue_associations_transcriptomic_protomics.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+    write.table(common_all, file="Common_all_datasets.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+    write.table(unique, file="gene_tissue_associations_unique.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+    
+    
     
     colors<-c("#b6dba4",col[7],col[8],"#99dbf8")
     output_file<-"../figures/all_datasets_comparison_venn_diagram_common_proteins_and_tissues.png"
@@ -285,8 +283,6 @@ get_venn_diagrams<-function(protein_tissues,cutoff,uniprot=F,col, append = apppe
   hparna_data<-hparna_data[hparna_data$proteins %in% common_proteins,]
   hparna_data$pairs<-paste(hparna_data$proteins,hparna_data$tissue,sep="-")
   
-  #all_data<-filter_dataset_tissue(protein_tissues,NULL,common_tissues, not_in=FALSE,c(3,4))
-  #all_data<-all_data[all_data$proteins %in% common_proteins,]
   
   common_pairs<-intersect(intersect(x=intersect(x=intersect(x=exon_data$pairs,y=gnf_data$pairs),y=unigene_data$pairs),y=rna_data$pairs),y=hparna_data$pairs)
   
@@ -310,7 +306,6 @@ get_venn_diagrams<-function(protein_tissues,cutoff,uniprot=F,col, append = apppe
   inAll <- length(intersect(x= exon_data$pairs,y= intersect(x = gnf_data$pairs, y = intersect(x = rna_data$pairs, y = intersect(x = hparna_data$pairs, y = unigene_data$pairs)))))
   inSingles <- c(length(unique(exon_data$pairs)),length(unique(gnf_data$pairs)),length(unique(rna_data$pairs)),length(unique(hparna_data$pairs)),length(unique(unigene_data$pairs)))
   pvalue_title <- paste("Pvalues Comparing mRNA datasets (only common proteins) at cutoff ", cutoff, sep='')
-  #p<-calc_venn_pvalue(length(population),inAll,inSingles, nIterations = 100000, pvalue_title, append = TRUE)
   
   
   filename<-NULL
@@ -371,6 +366,8 @@ complementarity_analysis<-function(protein_tissues,col){
   common_proteins_test<-intersect(x=gnf_test_data$proteins,y=uniprot_data$proteins)
   gnf_test_data<-gnf_test_data[gnf_test_data$proteins %in% common_proteins_test,]
   
+  
+  
   exon_data<- filter_dataset_tissue(protein_tissues,"exon",common_tissues,not_in=FALSE,c(2,3,4))
   gnf_data<- filter_dataset_tissue(protein_tissues,"gnf",common_tissues,not_in=FALSE,c(2,3,4))
   unigene_data<- filter_dataset_tissue(protein_tissues,"unigene",common_tissues,not_in=FALSE,c(2,3,4))
@@ -379,13 +376,13 @@ complementarity_analysis<-function(protein_tissues,col){
   hpa_data<- filter_dataset_tissue(protein_tissues,"hpa",common_tissues,not_in=FALSE,c(2,3,4))
   hpm_data<- filter_dataset_tissue(protein_tissues,"hpm",common_tissues,not_in=FALSE,c(2,3,4))
   
-  exon_data<- exon_data[exon_data$score > 250 & exon_data$proteins %in% common_proteins_test,c(1,2,3)]
-  gnf_data<- gnf_data[gnf_data$score > 250 & gnf_data$proteins %in% common_proteins_test,c(1,2,3)]
-  unigene_data<- unigene_data[unigene_data$score > 20 & unigene_data$proteins %in% common_proteins_test,c(1,2,3)]
-  rna_data<- rna_data[rna_data$score > 5 & rna_data$proteins %in% common_proteins_test,c(1,2,3)]
-  hparna_data<- hparna_data[hparna_data$score > 20 & hparna_data$proteins %in% common_proteins_test,c(1,2,3)]
-  hpa_data<- hpa_data[hpa_data$score > 9.9 & hpa_data$proteins %in% common_proteins_test,c(1,2,3)]
-  hpm_data<- hpm_data[hpm_data$score > 10 & hpm_data$proteins %in% common_proteins_test,c(1,2,3)]
+  exon_data<- exon_data[exon_data$score >= 250 & exon_data$proteins %in% common_proteins_test,c(1,2,3)]
+  gnf_data<- gnf_data[gnf_data$score >= 250 & gnf_data$proteins %in% common_proteins_test,c(1,2,3)]
+  unigene_data<- unigene_data[unigene_data$score >= 20 & unigene_data$proteins %in% common_proteins_test,c(1,2,3)]
+  rna_data<- rna_data[rna_data$score >= 5 & rna_data$proteins %in% common_proteins_test,c(1,2,3)]
+  hparna_data<- hparna_data[hparna_data$score >= 20 & hparna_data$proteins %in% common_proteins_test,c(1,2,3)]
+  hpa_data<- hpa_data[hpa_data$score >= 10.45 & hpa_data$proteins %in% common_proteins_test,c(1,2,3)]
+  hpm_data<- hpm_data[hpm_data$score >= 10 & hpm_data$proteins %in% common_proteins_test,c(1,2,3)]
   
   gnf_test_data$pairs<-paste(gnf_test_data$proteins,gnf_test_data$tissue,sep="-")
   
@@ -413,6 +410,7 @@ complementarity_analysis<-function(protein_tissues,col){
   #mRNA-UniProt common proteins
   common_proteins<-intersect(x=mRNA_proteins,y=uniprot_data$proteins)
   
+    
   #mRNA common protein-tissue pairs for common proteins
   mRNA_common_protein_pairs<-union(x=union(x=union(union(x=union(x=union(x=exon_data$pairs[exon_data$proteins %in% common_proteins],y=gnf_data$pairs[gnf_data$proteins %in% common_proteins]),
                                                                  y=unigene_data$pairs[unigene_data$proteins %in% common_proteins]),y=rna_data$pairs[rna_data$proteins %in% common_proteins]),
@@ -429,7 +427,7 @@ complementarity_analysis<-function(protein_tissues,col){
   
   #mRNA-UniProt protein-tissue pairs
   common_pairs<-length(intersect(x=mRNA_pairs,y=uniprot_data$pairs))
-  
+
   #mRNA-UniProt uncommon protein-tissue pairs
   mRNA_uncommon<-length(mRNA_common_protein_pairs)-common_pairs    
   uniprot_uncommon<-length(uniprot_data$pairs)-common_pairs
@@ -456,6 +454,11 @@ complementarity_analysis<-function(protein_tissues,col){
   gnf_test_uncommon<-length(gnf_test_pairs)-common_pairs_test    
   uniprot_test_uncommon<-length(uniprot_data$pairs)-common_pairs_test
   
+  ##create supplementary files
+  write.table(intersect(x=gnf_test_pairs,y=uniprot_data$pairs), file="Common_GNF_UniProtKB.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+  write.table(intersect(x=mRNA_pairs,y=uniprot_data$pairs), file="Common_Integrated_set_UniProtKB.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+  write.table(gnf_test_pairs, file="GNF_coverage_associations.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
+  write.table(mRNA_pairs, file="Integrated_set.tsv", row.names=FALSE, quote = FALSE, col.names = c("Gene-tissue associations"))
   
   png(file = "../figures/uniprot_gnf_set_venn_diagram.png",
       width = 550, height = 450)

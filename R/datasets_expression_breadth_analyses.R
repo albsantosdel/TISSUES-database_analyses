@@ -106,7 +106,7 @@ hpa_data<-data[data$dataset == "hpa",]
 hpa_data$dataset<-"HPA"
 
 #Get information about single and multiple antibodies HPA IHC
-single_antibody_proteins<-read.table(file="hpa_single_antibody_proteins.tsv",header=F)
+single_antibody_proteins<-read.table(file="hpa_single_antibody_proteins.tsv",header=F, sep="\t")
 hpa_data$single<- 0
 hpa_data$single[hpa_data$prot %in% single_antibody_proteins$V1]<-1
 

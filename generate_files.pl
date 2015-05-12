@@ -7,19 +7,18 @@
 #!/usr/bin/ perl
 use warnings;
 use strict;
-
 #Data directory
 my $data_dir = "data/";
 #Input files: this files need to be downloaded from FigShare (http://figshare.com/s/cb788d0ef4bd11e4b5ea06ec4b8d1f61)
 # and stored in the data/datasets/ directory
 my %options = ("unigene"=> $data_dir."datasets/unigene.tsv",
-                "gnf"=> $data_dir."datasets/gnf.tsv",
-                "exon"=> $data_dir."datasets/exon.tsv",
+		"gnf"=> $data_dir."datasets/gnf.tsv",
+	       "exon"=> $data_dir."datasets/exon.tsv",
                 "hpa"=> $data_dir."datasets/hpa_ihc.tsv",
-                "hpa_rna"=> $data_dir."datasets/hpa_rna.tsv",
-                "rna"=> $data_dir."datasets/rna_seq.tsv",
-                "tm"=> $data_dir."datasets/text_mining.tsv",
-                "hpm"=> $data_dir."datasets/hpm.tsv");
+		"hpa_rna"=> $data_dir."datasets/hpa_rna.tsv",
+		"rna"=> $data_dir."datasets/rna_seq.tsv",
+		"tm"=> $data_dir."datasets/text_mining.tsv",
+		"hpm"=> $data_dir."datasets/hpm.tsv");
 
 #dictionary files: These files are used for backtracking tissues to their respective parent tissues
 # to identify which genes are expressed in the tissues of interest (more details in the README file)
@@ -52,7 +51,7 @@ my %mRNA = ("unigene"=> 20,
 my %cutoffs = ("unigene"=>[0.9,10,20],
 	"gnf"=> [50,100,250],
 	"exon"=> [50,100,250],
-	"hpa"=>[0,5.9,9.9],
+	"hpa"=>[0,5.9,10.45],
 	"hpa_rna"=>[1,10,20],
 	"rna"=>[0.5,1,5],
 	"uniprot"=>[0,0,0],
@@ -116,12 +115,14 @@ foreach my $dataset_name (keys %options){
 	&get_exp_breadth_and_consistency_analyses_files($dataset_labels,\%express_breadth, \%consistency, $dataset_name, \%cutoffs);
 
 	if (exists $mRNA{$dataset_name}){
-		&build_mRNA_references_set($dataset_labels, \%reference_set, $mRNA{$dataset_name});
+		&build_mRNA_references_set($dataset_labels, \%reference_set, $mRNA{$dataset_name},\%common_tissues);
 	}
 }
 
-my ($reference_set_filtered) = &filter_common_tissues(\%reference_set, \%common_tissues);
-my %gold_standards = ("uniprot" => $goldstandard_filtered, "mRNA_reference_combined" => $reference_set_filtered);
+my $min_datasets = int((keys %mRNA)/2) + 1;#In at least more than half of the datasets
+my ($reference_set_filtered) = &filter_agreement_datasets(\%reference_set, $min_datasets);
+my %gold_standards = ("uniprot"=> $goldstandard_filtered, 
+	"mRNA_reference_combined" => $reference_set_filtered);
 #calculate fold enrichment for the different datasets
 foreach my $goldstandard (keys %gold_standards){
 	foreach my $dataset_name (keys %dataset_scored_pairs){
@@ -137,8 +138,7 @@ foreach my $goldstandard (keys %gold_standards){
 #Print out consistency files
 &print_3dim(\%consistency, $consistency_file, $data_dir);
 #Print out mRNA reference set
-my $min_datasets = int((keys %mRNA)/2) + 1;#In at least more than half of the datasets
-&print_mRNA_reference_set(\%reference_set, $mRNA_reference_set, $min_datasets);
+&print_2dim($reference_set_filtered, $mRNA_reference_set);
 
 ##############
 #  Functions #
@@ -167,22 +167,6 @@ sub print_3dim(){
 		foreach my $dataset (keys %{${$data}{$level}}){
 			foreach my $id (keys %{${$data}{$level}{$dataset}}){
 				print OUT $dataset."\t".${$data}{$level}{$dataset}{$id}."\t".$id."\n";
-			}
-		}
-	}
-	close(OUT);
-}
-
-sub print_mRNA_reference_set(){
-	my ($data) = $_[0];
-	my ($output_file) = $_[1];
-	my $cutoff = $_[2];
-	open(OUT,">$output_file") or die "Unable to open the Output file $output_file\n";
-		
-	foreach my $a (keys %{$data}){
-		foreach my $b (keys %{${$data}{$a}}){
-			if (${$data}{$a}{$b} >= $cutoff){
-				print OUT $a."\t".$b."\n";
 			}
 		}
 	}
@@ -391,6 +375,20 @@ sub format_score_pairs(){
     	}
 }
 
+sub filter_agreement_datasets(){
+	my ($reference_set) = $_[0];
+	my ($cutoff) = $_[1];
+	my %filtered_reference = ();
+	foreach my $ensp (keys %{$reference_set}){
+		foreach my $label (keys %{${$reference_set}{$ensp}}){
+			if (${$reference_set}{$ensp}{$label} >= $cutoff){
+				$filtered_reference{$ensp}{$label} = 1;
+			}
+		}
+	}
+	return \%filtered_reference;
+}
+
 sub filter_common_tissues(){
 	my ($data) = $_[0];
 	my ($common_tissues) = $_[1];
@@ -442,12 +440,15 @@ sub build_mRNA_references_set(){
 	my ($dataset_labels) = $_[0];
 	my ($reference_set) = $_[1];
 	my $cutoff = $_[2];
+	my ($common_tissues) = $_[3];
 
 	foreach my $ensp (keys %{$dataset_labels}){
 		foreach my $label (keys %{${$dataset_labels}{$ensp}}){
-			my ($score, $stars) = split("\t",${$dataset_labels}{$ensp}{$label});
-			if ($score > $cutoff){
-				${$reference_set}{$ensp}{$label}++;
+			if (exists ${$common_tissues}{$label}){
+				my ($score, $stars) = split("\t",${$dataset_labels}{$ensp}{$label});
+				if ($score >= $cutoff){
+					${$reference_set}{$ensp}{$label}++;
+				}
 			}
 		}
 	}
@@ -467,11 +468,11 @@ sub calculate_fold_enrichment(){
     	my @stars = ();
     	my $dataset_total_pairs = 0;
     	my %gold_valid_prots = ();
-    	foreach my $score (sort {$a <=> $b} keys %{$dataset}){
+	foreach my $score (sort {$a <=> $b} keys %{$dataset}){
 		foreach my $ensp (keys %{${$dataset}{$score}}){
 	    		if(exists ${$gold}{$ensp}){ 
+				$gold_valid_prots{$ensp} = 1;
 		 		foreach my $label (keys %{${$dataset}{$score}{$ensp}}){
-					$gold_valid_prots{$ensp} = 1;
 					$dataset_total_pairs++;
 					my $star = ${$dataset}{$score}{$ensp}{$label};
 					if(exists ${$gold}{$ensp}{$label}){
